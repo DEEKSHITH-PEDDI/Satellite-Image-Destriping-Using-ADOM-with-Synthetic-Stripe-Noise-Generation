@@ -1,27 +1,66 @@
 # Satellite Image Destriping Using ADOM with Synthetic Stripe Noise Generation
 
-## 📖 Overview
-
-This project focuses on removing stripe noise from satellite images using the **Alternating Direction Optimization Method (ADOM)**.
-
-Since publicly available satellite image datasets containing both **striped images** and their corresponding **clean ground truth images** are not readily available, this project first generates **synthetic stripe noise** on clean satellite images. The generated striped images are then processed using the ADOM-based destriping algorithm to recover the original image.
+## Table of Contents
+1. Overview
+2. Objectives
+3. Features
+4. Project Structure
+5. Software Requirements
+6. Installation
+7. Methodology
+8. Workflow
+9. Algorithm
+10. Mathematical Model
+11. Input and Output
+12. How to Run
+13. Applications
+14. Advantages
+15. Limitations
+16. Future Enhancements
+17. Conclusion
+18. Authors
+19. License
 
 ---
 
-## 🚀 Features
+# Overview
 
-- Generate synthetic stripe noise
-- Create paired clean and noisy datasets
-- Remove stripe noise using ADOM
-- Batch processing of satellite images
-- Save recovered images and extracted stripe components
-- Easy to customize stripe intensity and width
+Satellite images are widely used in remote sensing, agriculture, environmental monitoring, urban planning, and disaster management. One common problem affecting the quality of satellite imagery is **stripe noise**, which appears as unwanted vertical lines caused by detector inconsistencies, calibration errors, or sensor malfunction.
+
+Because publicly available paired datasets containing both striped images and their corresponding clean images are limited, this project creates **synthetic stripe noise** from clean satellite images and then removes it using the **Alternating Direction Optimization Method (ADOM)**.
+
+The project consists of two major phases:
+
+1. Synthetic Stripe Noise Generation
+2. Stripe Removal using ADOM
 
 ---
 
-## 📂 Project Structure
+# Objectives
 
-```
+- Generate synthetic stripe noise on clean satellite images.
+- Create paired clean and noisy datasets.
+- Remove stripe noise using ADOM.
+- Recover high-quality satellite images.
+- Provide a reproducible pipeline for satellite image destriping.
+
+---
+
+# Features
+
+- Artificial stripe noise generation
+- Batch image processing
+- ADOM optimization
+- FFT-based optimization
+- Stripe component extraction
+- Destriped image reconstruction
+- Supports PNG, JPG, JPEG, BMP, TIFF images
+
+---
+
+# Project Structure
+
+```text
 Satellite-Image-Destriping/
 │
 ├── stripsadding.py
@@ -36,9 +75,15 @@ Satellite-Image-Destriping/
 
 ---
 
-## 🛠 Requirements
+# Software Requirements
 
-Install the required libraries using:
+- Python 3.9+
+- NumPy
+- OpenCV
+- ImageIO
+- tqdm
+
+Install dependencies:
 
 ```bash
 pip install numpy opencv-python imageio tqdm
@@ -46,10 +91,63 @@ pip install numpy opencv-python imageio tqdm
 
 ---
 
-## 📊 Workflow
+# Methodology
 
-```
+## Step 1: Dataset Collection
+
+Clean satellite images are collected from datasets such as UC Merced or EuroSAT. These images serve as the ground truth.
+
+## Step 2: Image Preprocessing
+
+- Read each image.
+- Resize to 256 × 256 pixels.
+- Store images in a standard format.
+
+## Step 3: Synthetic Stripe Noise Generation
+
+The `stripsadding.py` script:
+
+- Reads clean images.
+- Randomly selects image columns.
+- Adds vertical stripe noise with configurable width and intensity.
+- Saves:
+  - Clean images
+  - Noisy (striped) images
+
+This creates paired data for evaluation.
+
+## Step 4: Image Normalization
+
+Images are normalized to the range [0,1] before optimization for numerical stability.
+
+## Step 5: Stripe Removal using ADOM
+
+The `stripe_to_sameimage.py` script:
+
+- Reads striped images.
+- Converts RGB images to grayscale.
+- Computes image gradients.
+- Applies soft thresholding and group soft thresholding.
+- Uses FFT for efficient optimization.
+- Iteratively estimates stripe noise.
+- Reconstructs the clean image.
+
+## Step 6: Output Generation
+
+For every image:
+
+- `*_destriped.png` – recovered image.
+- `*_stripe.png` – extracted stripe component.
+
+---
+
+# Workflow
+
+```text
 Clean Satellite Images
+        │
+        ▼
+Image Preprocessing
         │
         ▼
 Synthetic Stripe Generation
@@ -58,151 +156,144 @@ Synthetic Stripe Generation
 Striped Images
         │
         ▼
-ADOM Destriping Algorithm
+Image Normalization
         │
         ▼
-Recovered Images
+ADOM Optimization
+        │
+        ▼
+Stripe Estimation
+        │
+        ▼
+Image Reconstruction
+        │
+        ▼
+Recovered Image + Stripe Component
 ```
 
 ---
 
-## Stage 1: Stripe Generation
+# Algorithm
 
-Run:
+ADOM separates the observed image into a clean image and stripe component.
+
+Major operations:
+
+- Gradient computation
+- Soft thresholding
+- Group soft thresholding
+- FFT optimization
+- Dual variable update
+- Convergence checking
+
+The algorithm iterates until convergence or the maximum number of iterations.
+
+---
+
+# Mathematical Model
+
+Observed image:
+
+O = D + S
+
+Where:
+
+- O = Observed striped image
+- D = Clean image
+- S = Stripe component
+
+Recovered image:
+
+D = O − S
+
+---
+
+# Input and Output
+
+## Input
+
+- Clean satellite images for stripe generation.
+- Striped satellite images for destriping.
+
+## Output
+
+- Destriped satellite image.
+- Estimated stripe image.
+
+---
+
+# How to Run
+
+## Generate Synthetic Stripes
 
 ```bash
 python stripsadding.py
 ```
 
-### Functionality
-
-- Reads clean satellite images.
-- Resizes images to **256 × 256**.
-- Adds artificial vertical stripe noise.
-- Saves:
-  - Clean images
-  - Noisy (striped) images
-
----
-
-## Stage 2: Stripe Removal
-
-Run:
+## Run Stripe Removal
 
 ```bash
 python stripe_to_sameimage.py
 ```
 
-### Functionality
-
-- Reads striped images.
-- Converts RGB images to grayscale.
-- Applies the ADOM optimization algorithm.
-- Removes stripe noise.
-- Saves:
-  - Destriped image
-  - Estimated stripe component
+Outputs are stored inside the `output` folder.
 
 ---
 
-## 📁 Input
-
-Place the striped images inside the **input** folder.
-
-Example:
-
-```
-input/
-    image1.png
-    image2.png
-```
-
----
-
-## 📁 Output
-
-After execution, the output folder will contain:
-
-```
-output/
-    image1_destriped.png
-    image1_stripe.png
-```
-
----
-
-## Algorithm
-
-The observed image is represented as:
-
-```
-Observed Image = Clean Image + Stripe Noise
-```
-
-or
-
-```
-O = D + S
-```
-
-where
-
-- **O** = Observed image
-- **D** = Destriped image
-- **S** = Stripe component
-
-The ADOM algorithm estimates the stripe component (**S**) and subtracts it from the observed image to recover the clean image.
-
----
-
-## Applications
+# Applications
 
 - Remote Sensing
-- Satellite Image Enhancement
 - Agriculture
-- Environmental Monitoring
 - GIS
+- Environmental Monitoring
 - Disaster Management
-- Land Cover Analysis
+- Land Cover Mapping
 
 ---
 
-## Advantages
+# Advantages
 
-- Automatic stripe generation
+- Easy to use
+- Generates paired datasets
 - Fast optimization using FFT
-- Batch image processing
-- Easy to modify parameters
-- Produces clean and stripe component separately
+- Batch processing
+- Adjustable stripe intensity
 
 ---
 
-## Limitations
+# Limitations
 
-- Uses synthetic stripe noise instead of real sensor noise.
-- Mainly designed for vertical stripe artifacts.
+- Uses synthetic stripe noise.
+- Mainly designed for vertical stripes.
 - Converts images to grayscale during destriping.
 
 ---
 
-## Future Work
+# Future Enhancements
 
-- Support real satellite stripe datasets.
-- RGB image destriping.
-- Deep learning-based stripe removal.
-- GUI application.
-- Performance evaluation using PSNR and SSIM.
-
----
-
-## Authors
-
-**Final Year Project**
-
-**Title:** Satellite Image Destriping Using ADOM with Synthetic Stripe Noise Generation
+- RGB destriping
+- Real satellite stripe datasets
+- Deep learning-based methods
+- GUI application
+- PSNR, SSIM and RMSE evaluation
+- High-resolution image support
 
 ---
 
-## License
+# Conclusion
 
-This project is developed for educational and research purposes.
+This project presents a complete pipeline for satellite image destriping. Synthetic stripe noise is first generated on clean satellite images to create a paired dataset. The ADOM optimization algorithm then estimates and removes stripe noise, producing restored images while preserving important image details. The methodology enables objective evaluation because the original clean image is available for comparison.
+
+---
+
+# Authors
+
+Final Year Project
+
+**Project Title:** Satellite Image Destriping Using ADOM with Synthetic Stripe Noise Generation
+
+---
+
+# License
+
+This project is intended for educational and research purposes.
