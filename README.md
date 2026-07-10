@@ -286,13 +286,6 @@ This project presents a complete pipeline for satellite image destriping. Synthe
 
 ---
 
-# Authors
-
-Final Year Project
-
-**Project Title:** Satellite Image Destriping Using ADOM with Synthetic Stripe Noise Generation
-
----
 
 # License
 
